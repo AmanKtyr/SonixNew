@@ -1,0 +1,3 @@
+Add Filter in topbar
+when I click on "Your Top Artist" then show selected  artist's all songs
+Recently Played
