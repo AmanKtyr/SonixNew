@@ -35,37 +35,22 @@ import Icon from 'react-native-vector-icons/FontAwesome';
 import { LinearGradient } from 'expo-linear-gradient';
 
 
-const songs = [
-  { title: 'qyade', artist: 'Arijit Singh', image: require('@/assets/images/qayde.jpg'), audio: require('@/assets/audio/qayade.mp3') },
-  { title: 'Shiddat', artist: 'Manan Bhardwaj', image: require('@/assets/images/shiddat.jpg'), audio: require('@/assets/audio/bhakti/shiddat.mp3') },
-  { title: 'Barbaadiyan', artist: 'Sachet Tabdon,Nikhita Gandhi', image: require('@/assets/images/barbaadiyaan.jpg'), audio: require('@/assets/audio/barbaadiyan.mp3') },
-  { title: 'Hum Dum', artist: 'Ankit Tiwari', image: require('@/assets/images/humddumshiddat.jpg'), audio: require('@/assets/audio/humdumshiddat.mp3') },
-  { title: 'Phir Chala', artist: 'Arijit Song', image: require('@/assets/images/phirchalla.jpg'), audio: require('@/assets/audio/phirchalajubinnautiyal.mp3') },
-  { title: 'Jug Jug Jeeve', artist: 'Prakriti Kakar& Sachin-Jigar', image: require('@/assets/images/jugjugjeeeve.jpg'), audio: require('@/assets/audio/jugjugjeeve.mp3') },
-  { title: 'Ki Honda Pyar', artist: 'Jassie Gill', image: require('@/assets/images/kihondapyarr.jpg'), audio: require('@/assets/audio/kihondapyar.mp3') },
-  { title: 'Humdum', artist: 'Vishal Mishra', image: require('@/assets/images/Humdum-From-Savi-Hindi-2024-20240520191009-500x500.jpg'), audio: require('@/assets/audio/humdumharshvardhanrane.mp3') },
-  { title: 'Ajao Meri Tamanna', artist: 'Javed Ali,Mou Mukherjee(Jojo)', image: require('@/assets/images/meritamanna.jpg'), audio: require('@/assets/audio/meritamanna.mp3') },
-  { title: 'Tum Itna jo Muskura Rahe Ho', artist: 'Jagjit Singh', image: require('@/assets/images/tumitnajo.jpg'), audio: require('@/assets/audio/muskuraraheho.mp3') },
-  { title: 'HumnavaMere', artist: 'Jubin Nautiyar', image: require('@/assets/images/humnavamere.jpg'), audio: require('@/assets/audio/humnavamerejubinnautiyal.mp3') },
-  { title: 'Ishq', artist: 'Faheem Abdullah', image: require('@/assets/images/ishqfaheem.jpg'), audio: require('@/assets/audio/ishqfaheemabdullah.mp3') },
-  { title: 'khayali Ishq', artist: 'Mohit chauhan', image: require('@/assets/images/khayaliishqq.jpg'), audio: require('@/assets/audio/khayaliishq.mp3') },
-  { title: 'Kya Tujhe Ab Ye Dil Bataye', artist: 'Atif Aslam', image: require('@/assets/images/kyatujheab.jpg'), audio: require('@/assets/audio/kyatujhe.mp3') },
-  { title: 'Tum Itna Jo Muskura Rahe ho', artist: 'Jagjit Singh', image: require('@/assets/images/tumitnajo.jpg'), audio: require('@/assets/audio/muskuraraheho.mp3') },
-  { title: 'Tera chehra', artist: 'Adnan sami', image: require('@/assets/images/terachera.jpg'), audio: require('@/assets/audio/terachehrajab.mp3') },
-  { title: 'Tere Dil Pe Haq Mera hai', artist: 'Vishal Mishara', image: require('@/assets/images/deewaniyat.jpg'), audio: require('@/assets/audio/teredilpehaqmerah.mp3') },
-  { title: 'Tere Liye', artist: 'Atif Aslam,Shreya Ghoshal', image: require('@/assets/images/tereliyeduniyabhulai.jpg'), audio: require('@/assets/audio/tereliyeduniya.mp3') },
-  { title: 'Tum Se Hi', artist: 'Ankit Tiwari', image: require('@/assets/images/tumsehialia.jpg'), audio: require('@/assets/audio/tumsehiankit.mp3') },
-  { title: 'Tum Se', artist: 'Mohit Chouhan', image: require('@/assets/images/tumse.jpg'), audio: require('@/assets/audio/tumsejabwemet.mp3') },
-  { title: 'Zamaana Lage', artist: 'Arijit Singh', image: require('@/assets/images/zamanalagetumhe.jpg'), audio: require('@/assets/audio/zamaanalage.mp3') },
-  { title: 'Kbhi Aine Pe Liikha Tujhe', artist: 'Kk', image: require('@/assets/images/kbhiainnepelikhatujhe.jpg'), audio: require('@/assets/audio/kbhiainepelikhatujhe.mp3') },
-  { title: 'Jhol', artist: 'Maanu x Annural Khalid', image: require('@/assets/images/palpaljeena.jpg'), audio: require('@/assets/audio/Jhol.mp3') },
-  { title: 'Tera Mera Hai Pyar', artist: 'Ahmed Jahannzeb', image: require('@/assets/images/palpaljeena.jpg'), audio: require('@/assets/audio/teramerahaipyar.mp3') },
-];
 
 export default function PlayerScreen() {
   const router = useRouter();
-  const params = useLocalSearchParams<{ startIndex?: string }>();
+  const params = useLocalSearchParams<{ startIndex?: string; category?: string }>();
   const soundRef = useRef<Audio.Sound | null>(null);
+
+  const [songList, setSongList] = useState(songs);
+
+  useEffect(() => {
+    if (params.category) {
+      setSongList(songs.filter(song => song.category === params.category));
+    } else {
+      setSongList(songs);
+    }
+    setCurrentSongIndex(0); // Reset index when category changes
+  }, [params.category]);
 
   const initialIndex = params.startIndex ? parseInt(params.startIndex, 10) : 0;
   const [currentSongIndex, setCurrentSongIndex] = useState(initialIndex);
@@ -73,7 +58,16 @@ export default function PlayerScreen() {
   const [duration, setDuration] = useState(0);
   const [position, setPosition] = useState(0);
   const [isSeeking, setIsSeeking] = useState(false);
-  const currentSong = songs[currentSongIndex];
+  const currentSong = songList[currentSongIndex];
+
+  // Add a check for currentSong
+  if (!currentSong) {
+    return (
+      <View style={styles.container}>
+        <Text style={styles.songTitle}>No songs found.</Text>
+      </View>
+    );
+  }
 
   function formatTime(sec: number) {
     if (isNaN(sec)) {
@@ -123,15 +117,15 @@ export default function PlayerScreen() {
         soundRef.current.unloadAsync();
       }
     };
-  }, [currentSongIndex]); // Rerun effect when song index changes
+  }, [currentSongIndex, songList]); // Rerun effect when song index or song list changes
 
   const handleNext = () => {
-    setCurrentSongIndex((prevIndex) => (prevIndex + 1) % songs.length);
+    setCurrentSongIndex((prevIndex) => (prevIndex + 1) % songList.length);
   };
 
   const handlePrevious = () => {
     setCurrentSongIndex((prevIndex) => {
-      return (prevIndex - 1 + songs.length) % songs.length;
+      return (prevIndex - 1 + songList.length) % songList.length;
     });
   };
 

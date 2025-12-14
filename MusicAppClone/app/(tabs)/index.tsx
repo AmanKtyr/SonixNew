@@ -81,7 +81,7 @@ export default function HomeScreen() {
       <ScrollView contentContainerStyle={styles.contentContainer}>
         <View style={styles.header}>
           <Text style={styles.greeting}>Good evening</Text>
-          <TouchableOpacity>
+          <TouchableOpacity onPress={() => router.push('/(tabs)/explore')}>
             <Ionicons name="search-outline" size={24} color="#fff" />
           </TouchableOpacity>
         </View>
